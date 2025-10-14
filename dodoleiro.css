@@ -2730,6 +2730,7 @@ blockquote {
 .logo-div {
   width: 70px;
   margin-top: 5px;
+  margin-left: 20px;
 }
 
 .logo-div.lab {
