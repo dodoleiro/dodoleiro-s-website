@@ -4288,3 +4288,10 @@ blockquote {
   font-style: normal;
   font-display: swap;
 }
+
+/* Footer logo sizing fix */
+.combine-section_contact5 .logo-footer .logo-img {
+  width: 45px !important;   /* stessa dimensione di prima */
+  height: auto !important;
+}
+
