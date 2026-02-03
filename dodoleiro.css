@@ -3267,46 +3267,33 @@ blockquote {
   font-size: .8rem;
 }
 
-.logo-footer {
-  filter: none;
-  margin-top: -20px;
-  margin-bottom: 0;
-  margin-left: 0;
-  transition: all .2s;
-}
-
-.logo-footer:hover {
-  filter: none;
-}
-
-.logo-footer.w--current {
-  filter: none;
-  margin-bottom: 0;
-  margin-left: 0;
-}
-
-/* Questo serve a sollevare il logo e metterlo accanto a IG */
-.logo-footer {
+/* Forza il contenitore a stare sulla stessa linea di Instagram */
+#w-node-b978e956-7cfa-f2f8-d37d-d10ffa061588-7b5e7c73 {
+  align-self: center !important; 
+  justify-self: end !important;
   display: flex !important;
-  flex-direction: row;       /* Forza i loghi a stare uno accanto all'altro */
-  justify-content: flex-end; /* Li tiene a destra */
-  align-items: center;      /* Allinea il centro del logo con il centro di IG */
-  gap: 20px;                 /* Spazio orizzontale tra Instagram e il tuo logo */
-  margin-top: 0 !important;  /* Rimuove spinte verso il basso */
-  height: 100%;              /* Si assicura che usi l'altezza della riga */
+  align-items: center !important;
+  margin: 0 !important;
 }
 
+/* Regola la posizione e la grandezza del logo dorato */
 .logo-img {
-  width: 80px !important;    /* Regola la larghezza come preferisci */
+  width: 80px !important;    /* Cambia questo numero per la grandezza */
   height: auto !important;
-  margin-bottom: 5px;        /* Micro-regolazione: aumentalo se è ancora troppo basso */
+  position: relative !important;
+  top: -38px !important;     /* REGOLA QUESTO: più aumenti il numero negativo (es. -45px), più il logo SALE */
+  display: block !important;
 }
 
-/* Correzione per Mobile */
+/* Correzione per Mobile: lo rimettiamo in posizione normale */
 @media screen and (max-width: 479px) {
-  .logo-footer {
-    justify-content: center;
-    gap: 15px;
+  .logo-img {
+    top: 0 !important;       
+    width: 60px !important;
+    margin: 10px auto !important;
+  }
+  #w-node-b978e956-7cfa-f2f8-d37d-d10ffa061588-7b5e7c73 {
+    justify-self: center !important;
   }
 }
 
