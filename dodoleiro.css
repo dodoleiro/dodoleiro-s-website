@@ -3281,7 +3281,7 @@ blockquote {
   width: 80px !important;    /* Cambia questo numero per la grandezza */
   height: auto !important;
   position: relative !important;
-  top: -38px !important;     /* REGOLA QUESTO: più aumenti il numero negativo (es. -45px), più il logo SALE */
+  top: -45px !important;     /* REGOLA QUESTO: più aumenti il numero negativo (es. -45px), più il logo SALE */
   display: block !important;
 }
 
