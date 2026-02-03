@@ -3285,44 +3285,28 @@ blockquote {
   margin-left: 0;
 }
 
-/* Contenitore del logo */
-.logo-footer {
-  display: flex;
-  justify-content: flex-end; /* Spinge il logo tutto a destra */
-  align-items: center;      /* Lo centra verticalmente rispetto a eventuali testi vicini */
-  padding: 20px;            /* Aumenta/Diminuisci per allontanarlo dai bordi del footer */
-}
-
-/* 1. Il link contenitore: lo usiamo per decidere la posizione nel footer */
+/* Questo serve a sollevare il logo e metterlo accanto a IG */
 .logo-footer {
   display: flex !important;
-  justify-content: flex-end; /* Sposta tutto a DESTRA */
-  align-items: center;
-  text-decoration: none;
-  margin-top: 20px;          /* Aumenta per distanziarlo da ciò che sta sopra */
+  flex-direction: row;       /* Forza i loghi a stare uno accanto all'altro */
+  justify-content: flex-end; /* Li tiene a destra */
+  align-items: center;      /* Allinea il centro del logo con il centro di IG */
+  gap: 20px;                 /* Spazio orizzontale tra Instagram e il tuo logo */
+  margin-top: 0 !important;  /* Rimuove spinte verso il basso */
+  height: 100%;              /* Si assicura che usi l'altezza della riga */
 }
 
-/* 2. Il div interno (opzionale, ma utile per controllo extra) */
-.logo-div {
-  display: block;
-}
-
-/* 3. L'immagine vera e propria: qui decidi la dimensione */
 .logo-img {
-  width: 60px !important;    /* REGOLA QUI la grandezza su Desktop */
+  width: 80px !important;    /* Regola la larghezza come preferisci */
   height: auto !important;
-  display: block;
+  margin-bottom: 5px;        /* Micro-regolazione: aumentalo se è ancora troppo basso */
 }
 
-/* 4. Correzioni per Mobile (Smartphone) */
+/* Correzione per Mobile */
 @media screen and (max-width: 479px) {
   .logo-footer {
-    justify-content: center; /* Lo centra su mobile così non tocca il bordo */
-    margin-top: 15px;
-  }
-  
-  .logo-img {
-    width: 45px !important;  /* REGOLA QUI la grandezza su Mobile */
+    justify-content: center;
+    gap: 15px;
   }
 }
 
