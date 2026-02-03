@@ -3267,34 +3267,35 @@ blockquote {
   font-size: .8rem;
 }
 
-/* Forza il contenitore a stare sulla stessa linea di Instagram */
-#w-node-b978e956-7cfa-f2f8-d37d-d10ffa061588-7b5e7c73 {
-  align-self: center !important; 
-  justify-self: end !important;
-  display: flex !important;
-  align-items: center !important;
-  margin: 0 !important;
+.logo-footer {
+  filter: none;
+  margin-top: -20px;
+  margin-bottom: 0;
+  margin-left: 0;
+  transition: all .2s;
 }
 
-/* Regola la posizione e la grandezza del logo dorato */
-.logo-img {
-  width: 80px !important;    /* Cambia questo numero per la grandezza */
+.logo-footer:hover {
+  filter: none;
+}
+
+.logo-footer.w--current {
+  filter: none;
+  margin-bottom: 0;
+  margin-left: 0;
+}
+
+.logo-footer img {
+  width: auto !important;
   height: auto !important;
-  position: relative !important;
-  top: -45px !important;     /* REGOLA QUESTO: più aumenti il numero negativo (es. -45px), più il logo SALE */
-  display: block !important;
+  margin-top: 0 !important;
 }
 
-/* Correzione per Mobile: lo rimettiamo in posizione normale */
-@media screen and (max-width: 479px) {
-  .logo-img {
-    top: 0 !important;       
-    width: 60px !important;
-    margin: 10px auto !important;
-  }
-  #w-node-b978e956-7cfa-f2f8-d37d-d10ffa061588-7b5e7c73 {
-    justify-self: center !important;
-  }
+@media screen and (max-width: 767px) {
+  .logo-footer img {
+  width: 100px !important;
+  height: auto !important;
+}
 }
 
 .bymk-block {
