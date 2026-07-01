@@ -141,6 +141,43 @@
         .section.section--white h1, .section.section--white h2, .section.section--white h3, .section.section--white h4, .section.section--white h5, .section.section--white h6, .section.section--white p {
             color: #070707;
         }
+
+        .visually-hidden {
+            clip: rect(0 0 0 0);
+            clip-path: inset(50%);
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            position: absolute;
+            white-space: nowrap;
+        }
+
+        .udesly-crt-glitch {
+            margin-bottom: 0;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            @keyframes textflicker {
+                from {
+                    text-shadow: 1px 0 0 #ea36af, -2px 0 0 #75fa69;
+                }
+
+                to {
+                    text-shadow: 2px 0.5px 2px #ea36af, -1px -0.5px 2px #75fa69;
+                }
+            }
+
+            .udesly-crt-glitch {
+                animation: textflicker 0.1s infinite alternate;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .logo-footer img {
+                width: 45px !important;
+            }
+        }
         </style>
     </div>
     <div class="hero__fixed">

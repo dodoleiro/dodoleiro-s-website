@@ -2786,38 +2786,10 @@ blockquote {
 
 .udesly-crt-glitch {
   margin-top: -6px;
-  margin-bottom: 0;
   font-family: Tahoma, Verdana, Segoe, sans-serif;
   font-size: 5rem;
   font-weight: 700;
   line-height: .98;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes textflicker {
-    from {
-      text-shadow: 1px 0 0 #ea36af, -2px 0 0 #75fa69;
-    }
-
-    to {
-      text-shadow: 2px .5px 2px #ea36af, -1px -.5px 2px #75fa69;
-    }
-  }
-
-  .udesly-crt-glitch {
-    animation: textflicker .1s infinite alternate;
-  }
-}
-
-.visually-hidden {
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  position: absolute;
-  white-space: nowrap;
 }
 
 .udesly-crt-glitch.right {
@@ -3314,7 +3286,7 @@ blockquote {
 }
 
 .logo-footer img {
-  width: 45px !important;
+  width: auto !important;
   height: auto !important;
   margin-top: 0 !important;
 }
