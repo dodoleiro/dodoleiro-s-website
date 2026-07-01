@@ -2786,10 +2786,22 @@ blockquote {
 
 .udesly-crt-glitch {
   margin-top: -6px;
+  margin-bottom: 0;
   font-family: Tahoma, Verdana, Segoe, sans-serif;
   font-size: 5rem;
   font-weight: 700;
   line-height: .98;
+}
+
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
 }
 
 .udesly-crt-glitch.right {
