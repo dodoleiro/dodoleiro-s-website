@@ -130,12 +130,24 @@
     </div>
     <div class="hero__fixed">
         <div class="mask"></div>
-<!-- Immagine 1: GIF originale (invariata) -->
-<img 
-  src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjJ1MWh3aHo4NmxjdmJwdnMyZWFmNXUzcjhveTVxd3h0YXBwZXo0OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/RBz29FblFsJguPkFpz/giphy.gif" 
-  loading="lazy" 
-  alt="Animated GIF" 
-  class="image is-one">
+<!-- Hero clip served as MP4 (a fraction of the GIF's size); falls back to the original GIF if the video fails to load -->
+<video
+  src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjJ1MWh3aHo4NmxjdmJwdnMyZWFmNXUzcjhveTVxd3h0YXBwZXo0OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/RBz29FblFsJguPkFpz/giphy.mp4"
+  autoplay loop muted playsinline
+  aria-hidden="true"
+  class="image is-one"></video>
+<script>
+(function() {
+    var v = document.querySelector('video.is-one');
+    v.addEventListener('error', function() {
+        var img = document.createElement('img');
+        img.src = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjJ1MWh3aHo4NmxjdmJwdnMyZWFmNXUzcjhveTVxd3h0YXBwZXo0OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/RBz29FblFsJguPkFpz/giphy.gif';
+        img.alt = '';
+        img.className = 'image is-one';
+        v.replaceWith(img);
+    });
+})();
+</script>
 
 <!-- Immagine 2: (IMG_7926_result_ees3st.png) -->
 <img 
