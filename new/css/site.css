@@ -750,3 +750,6 @@ main { position: relative; z-index: 1; }
 .gallery__empty { margin: 0; padding: 0 var(--pad); color: var(--muted); }
 .gallery__empty a { color: var(--fg); }
 .gallery.is-empty .reel__foot { display: none; }
+.no-js .reel__foot { display: none; }
+.backdrop video::-webkit-media-controls,
+.backdrop video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }

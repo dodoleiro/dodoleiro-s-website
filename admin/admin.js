@@ -248,7 +248,7 @@
       const media = document.createElement('div');
       media.className = 'item__media';
       const img = document.createElement('img');
-      img.alt = `Foto ${i + 1}`;
+      img.alt = '';
       img.loading = 'lazy';
       img.decoding = 'async';
       img.src = previewSrc(p);
@@ -279,7 +279,7 @@
       actions.className = 'item__actions';
       actions.innerHTML =
         '<button type="button" data-act="first">↑ Prima</button>' +
-        '<button type="button" data-act="replace">Sostituisci</button>' +
+        '<button type="button" data-act="replace">Cambia</button>' +
         '<button type="button" data-act="delete" class="danger">Elimina</button>';
       actions.querySelector('[data-act="first"]').disabled = i === 0;
 

@@ -11,6 +11,7 @@
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { background: var(--bg); color-scheme: dark; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
@@ -101,8 +102,8 @@ h1 { margin: 0.25rem 0 0.5rem; font-size: clamp(1.6rem, 5vw, 2.4rem); line-heigh
 .item__cap::placeholder { color: rgba(243, 240, 232, 0.35); }
 .item__actions { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
 .item__actions button {
-  min-height: 2.75rem; padding: 0.5rem 0.25rem;
-  font-size: 0.8rem; background: none; border: 0; border-left: 1px solid var(--line);
+  min-height: 2.75rem; padding: 0.5rem 0.2rem;
+  font-size: 0.78rem; white-space: nowrap; background: none; border: 0; border-left: 1px solid var(--line);
   color: var(--muted);
 }
 .item__actions button:first-child { border-left: 0; }
