@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: https://res.cloudinary.com https://raw.githubusercontent.com; connect-src https://api.github.com; script-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="theme-color" content="#070707">
+<title>Galleria · Dodoleiro</title>
+<link rel="icon" type="image/png" href="/favicon-96x96.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><img src="/new/img/wordmark.svg" alt="Dodoleiro"><span>Galleria</span></div>
+  <div class="top__right">
+    <a class="link" id="site-link" href="/new/#gallery" target="_blank" rel="noopener">Vedi sito ↗</a>
+    <button class="link" id="logout" type="button" hidden>Esci</button>
+  </div>
+</header>
+
+<main class="main">
+  <section id="loading" class="panel"><p class="muted">Caricamento…</p></section>
+
+  <section id="setup" class="panel setup" hidden>
+    <h1>Collega GitHub</h1>
+    <p class="muted">Serve solo la prima volta su questo dispositivo. Il codice resta salvato qui e permette alla pagina di pubblicare le foto sul sito.</p>
+    <ol class="steps">
+      <li>Apri <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">questa pagina di GitHub</a> (accedi se te lo chiede).</li>
+      <li><b>Token name</b>: scrivi <code>Galleria sito</code>. <b>Expiration</b>: scegli 1 anno (o “No expiration”).</li>
+      <li><b>Repository access</b> → <b>Only select repositories</b> → scegli <code>dodoleiro-s-website</code>.</li>
+      <li><b>Permissions</b> → <b>Repository permissions</b> → <b>Contents</b> → <b>Read and write</b>.</li>
+      <li>Premi <b>Generate token</b>, copia il codice (inizia con <code>github_pat_</code>) e incollalo qui sotto.</li>
+    </ol>
+    <form id="token-form" class="token-form" novalidate>
+      <label for="token">Codice token</label>
+      <input id="token" name="token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…" required>
+      <button class="btn btn--primary" type="submit" id="token-save">Salva e continua</button>
+      <p class="error" id="setup-error" role="alert" hidden></p>
+    </form>
+  </section>
+
+  <section id="app" hidden>
+    <div class="intro">
+      <h1>Le tue foto <span class="muted" id="count"></span></h1>
+      <p class="muted">La prima foto è quella che si vede per prima sul sito. Tieni premuto su una foto e trascinala per cambiare l’ordine.</p>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+    <ul class="grid" id="grid"></ul>
+    <p class="empty muted" id="empty" hidden>Nessuna foto per ora. Tocca <b>Aggiungi foto</b> per iniziare.</p>
+  </section>
+</main>
+
+<div class="bar" id="bar" hidden>
+  <label class="btn btn--ghost" for="add-input" id="add-label">+ Aggiungi foto</label>
+  <input class="sr-only" id="add-input" type="file" accept="image/*" multiple>
+  <button class="btn btn--primary" type="button" id="publish" disabled>Pubblica</button>
+</div>
+<input class="sr-only" id="replace-input" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span id="toast-text"></span>
+  <button type="button" id="toast-undo" hidden>Annulla</button>
+</div>
+
+<script src="lib/Sortable.min.js" defer></script>
+<script src="admin.js" defer></script>
+</body>
+</html>
