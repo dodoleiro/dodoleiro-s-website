@@ -14,6 +14,9 @@
   const TOKEN_KEY = 'dd-admin-token';
   const LARGE_EDGE = 2000;
   const THUMB_EDGE = 800;
+  const VIDEO_EDGE = 960;
+  const VIDEO_SECONDS = 10;
+  const VIDEO_BITRATE = 2500000;
 
   const $ = (id) => document.getElementById(id);
   const repoPath = (p) => `/repos/${OWNER}/${REPO}${p}`;
@@ -85,6 +88,7 @@
 
   function clean(p) {
     const o = { id: p.id, src: p.src, w: p.w, h: p.h, thumb: p.thumb, tw: p.tw };
+    if (p.type === 'video') o.type = 'video';
     const cap = (p.caption || '').trim();
     if (cap) o.caption = cap;
     if (p.lqip) o.lqip = p.lqip;
@@ -126,8 +130,8 @@
   }
 
   function scaled(img, maxEdge) {
-    const iw = img.naturalWidth;
-    const ih = img.naturalHeight;
+    const iw = img.naturalWidth || img.videoWidth;
+    const ih = img.naturalHeight || img.videoHeight;
     const k = Math.min(1, maxEdge / Math.max(iw, ih));
     const w = Math.max(1, Math.round(iw * k));
     const h = Math.max(1, Math.round(ih * k));
@@ -197,6 +201,121 @@
     }
   }
 
+  // Clips: first VIDEO_SECONDS, no audio, VIDEO_EDGE px, re-encoded in the browser so they loop like a GIF.
+  function videoMime() {
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return '';
+    const types = ['video/mp4;codecs=avc1.42E01F', 'video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    return types.find((t) => window.MediaRecorder.isTypeSupported(t)) || '';
+  }
+
+  function once(el, ev) {
+    return new Promise((resolve, reject) => {
+      const cleanup = () => { el.removeEventListener(ev, ok); el.removeEventListener('error', bad); };
+      const ok = () => { cleanup(); resolve(); };
+      const bad = () => { cleanup(); reject(new Error('decode')); };
+      el.addEventListener(ev, ok);
+      el.addEventListener('error', bad);
+    });
+  }
+
+  async function seek(v, t) {
+    if (Math.abs(v.currentTime - t) < 0.01) return;
+    const done = once(v, 'seeked');
+    v.currentTime = t;
+    await done;
+  }
+
+  const isVideoFile = (f) => (f.type || '').startsWith('video/') || /\.(mov|mp4|m4v|webm|3gp)$/i.test(f.name);
+
+  async function processVideo(file, onProgress) {
+    const mime = videoMime();
+    if (!mime) throw new Error('novideo');
+    const url = URL.createObjectURL(file);
+    const v = document.createElement('video');
+    v.className = 'work-video';
+    v.muted = true;
+    v.defaultMuted = true;
+    v.playsInline = true;
+    v.setAttribute('playsinline', '');
+    v.preload = 'auto';
+    document.body.append(v);
+    try {
+      const loaded = once(v, 'loadeddata');
+      v.src = url;
+      await loaded;
+      if (!v.videoWidth || !v.videoHeight) throw new Error('decode');
+      const dur = Math.min(Number.isFinite(v.duration) && v.duration > 0 ? v.duration : VIDEO_SECONDS, VIDEO_SECONDS);
+      const k = Math.min(1, VIDEO_EDGE / Math.max(v.videoWidth, v.videoHeight));
+      const w = Math.max(2, Math.round((v.videoWidth * k) / 2) * 2);
+      const h = Math.max(2, Math.round((v.videoHeight * k) / 2) * 2);
+
+      await seek(v, Math.min(0.4, dur / 2));
+      const poster = scaled(v, THUMB_EDGE);
+      const tiny = scaled(v, 20);
+      const T = await encode(poster, 0.78);
+      const lqip = tiny.toDataURL('image/jpeg', 0.5);
+      await seek(v, 0);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(v, 0, 0, w, h);
+      const stream = canvas.captureStream(30);
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: VIDEO_BITRATE });
+      const chunks = [];
+      rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      const stopped = new Promise((r) => { rec.onstop = r; });
+      rec.start(500);
+      await new Promise((resolve, reject) => {
+        let finished = false;
+        const finish = () => { if (!finished) { finished = true; clearTimeout(guard); resolve(); } };
+        const guard = setTimeout(finish, (dur + 5) * 1000);
+        const frame = () => {
+          if (finished) return;
+          ctx.drawImage(v, 0, 0, w, h);
+          if (onProgress) onProgress(Math.min(1, v.currentTime / dur));
+          if (v.currentTime >= dur || v.ended) { finish(); return; }
+          if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(frame);
+          else requestAnimationFrame(frame);
+        };
+        v.addEventListener('ended', finish, { once: true });
+        v.play().then(frame, (err) => { finished = true; clearTimeout(guard); reject(err); });
+      });
+      v.pause();
+      rec.stop();
+      await stopped;
+      stream.getTracks().forEach((t) => t.stop());
+      const type = mime.split(';')[0];
+      const blob = new Blob(chunks, { type });
+      if (!blob.size) throw new Error('encode');
+      const ext = type === 'video/mp4' ? 'mp4' : 'webm';
+      const id = newId();
+      [poster, tiny, canvas].forEach((c) => { c.width = 0; c.height = 0; });
+      return {
+        type: 'video',
+        id,
+        src: `/${PHOTO_DIR}/${id}.${ext}`,
+        w,
+        h,
+        thumb: `/${PHOTO_DIR}/${id}-thumb.${T.ext}`,
+        tw: Math.round(Math.min(1, THUMB_EDGE / Math.max(w, h)) * w) || w,
+        caption: '',
+        lqip,
+        _files: [
+          { path: `${PHOTO_DIR}/${id}.${ext}`, blob },
+          { path: `${PHOTO_DIR}/${id}-thumb.${T.ext}`, blob: T.blob },
+        ],
+        _preview: URL.createObjectURL(T.blob),
+      };
+    } finally {
+      v.removeAttribute('src');
+      v.load();
+      v.remove();
+      URL.revokeObjectURL(url);
+    }
+  }
+
   function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
       const r = new FileReader();
@@ -259,10 +378,10 @@
       num.className = 'item__num';
       num.textContent = String(i + 1);
       media.append(img, num);
-      if (p._files) {
+      if (p._files || p.type === 'video') {
         const badge = document.createElement('span');
-        badge.className = 'item__badge';
-        badge.textContent = 'Nuova';
+        badge.className = p._files ? 'item__badge' : 'item__badge item__badge--video';
+        badge.textContent = p.type === 'video' ? (p._files ? 'Nuovo video' : 'Video') : 'Nuova';
         media.append(badge);
       }
 
@@ -311,15 +430,18 @@
   // ------------------------------------------------------------------ actions
 
   async function addFiles(files, atIndex) {
-    const list = Array.from(files || []).filter((f) => f.type.startsWith('image/') || /\.(heic|heif|jpe?g|png|webp|gif|avif)$/i.test(f.name));
+    const list = Array.from(files || []).filter((f) => isVideoFile(f) || (f.type || '').startsWith('image/') || /\.(heic|heif|jpe?g|png|webp|gif|avif)$/i.test(f.name));
     if (!list.length) return;
     const failed = [];
     setBusy(true);
     let done = 0;
     for (const file of list) {
-      setStatus(`Preparo le foto… ${done + 1} di ${list.length}`);
+      const of = list.length > 1 ? ` (${done + 1} di ${list.length})` : '';
+      setStatus(`Preparo ${isVideoFile(file) ? 'il video' : 'la foto'}…${of}`);
       try {
-        const item = await processFile(file);
+        const item = isVideoFile(file)
+          ? await processVideo(file, (x) => setStatus(`Preparo il video… ${Math.round(x * 100)}%${of} — tieni lo schermo acceso`))
+          : await processFile(file);
         if (atIndex >= 0) {
           const old = items[atIndex];
           item.caption = old.caption || '';
@@ -337,9 +459,9 @@
     setBusy(false);
     render();
     if (failed.length) {
-      setStatus(`Non sono riuscito ad aprire: ${failed.join(', ')}. Se sono foto HEIC dell’iPhone, esportale in JPG (oppure Impostazioni › Fotocamera › Formati › “Più compatibile”).`, 'error');
+      setStatus(`Non sono riuscito ad aprire: ${failed.join(', ')}. Se sono foto HEIC dell’iPhone, esportale in JPG (oppure Impostazioni › Fotocamera › Formati › “Più compatibile”). Per i video, prova da un altro browser (Safari o Chrome aggiornati).`, 'error');
     } else {
-      setStatus(atIndex >= 0 ? 'Foto sostituita. Premi “Pubblica modifiche” per metterla online.' : `${list.length === 1 ? 'Foto aggiunta' : `${list.length} foto aggiunte`} in fondo. Premi “Pubblica modifiche” per metterle online.`);
+      setStatus(atIndex >= 0 ? 'Sostituita. Premi “Pubblica modifiche” per metterla online.' : `${list.length === 1 ? 'Aggiunta' : `${list.length} aggiunte`} in fondo. Premi “Pubblica modifiche” per metterle online.`);
     }
   }
 

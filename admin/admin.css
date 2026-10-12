@@ -151,3 +151,5 @@ h1 { margin: 0.25rem 0 0.5rem; font-size: clamp(1.6rem, 5vw, 2.4rem); line-heigh
   font-size: 0.92rem;
 }
 .toast button { background: none; border: 0; font-weight: 700; color: var(--bg); text-decoration: underline; padding: 0.25rem; }
+.item__badge--video { background: var(--fg); }
+.work-video { position: fixed; left: -10px; top: 0; width: 2px; height: 2px; opacity: 0; pointer-events: none; }

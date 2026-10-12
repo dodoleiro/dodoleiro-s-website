@@ -27,6 +27,7 @@
   const pad2 = (n) => String(n).padStart(2, '0');
   const icon = (path) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg>`;
   const ratio = (p) => (p.w > 0 && p.h > 0 ? p.w / p.h : 0.8);
+  const isVideo = (p) => p.type === 'video';
   const isLqip = (v) => typeof v === 'string' && /^data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+/=]+$/.test(v);
   const altFor = (p, i) => (p.caption ? `${p.caption} — Dodoleiro live` : `Dodoleiro live, photo ${i + 1}`);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -114,12 +115,18 @@
       btn.setAttribute('aria-label', `${pad2(i + 1)} / ${pad2(n)} — open photo${p.caption ? `: ${p.caption}` : ''}`);
       if (isLqip(p.lqip)) btn.style.backgroundImage = `url("${p.lqip}")`;
 
-      const img = d.createElement('img');
-      img.className = 'shot__img';
-      img.alt = '';
-      img.decoding = 'async';
-      img.loading = i < 3 ? 'eager' : 'lazy';
-      setImg(img, p, '(min-width: 900px) 50vw, 85vw');
+      let img;
+      if (isVideo(p)) {
+        img = clip(p);
+        img.className = 'shot__img';
+      } else {
+        img = d.createElement('img');
+        img.className = 'shot__img';
+        img.alt = '';
+        img.decoding = 'async';
+        img.loading = i < 3 ? 'eager' : 'lazy';
+        setImg(img, p, '(min-width: 900px) 50vw, 85vw');
+      }
 
       const num = d.createElement('span');
       num.className = 'shot__num';
@@ -147,8 +154,35 @@
     track.append(frag);
   }
 
+  function clip(p) {
+    const v = d.createElement('video');
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.setAttribute('playsinline', '');
+    v.setAttribute('aria-hidden', 'true');
+    v.preload = 'none';
+    if (p.thumb) v.poster = p.thumb;
+    v.src = p.src;
+    return v;
+  }
+
+  // clips only play while on screen (battery, data)
+  function setupClipPlayback() {
+    const clips = $$('.reel video');
+    if (!clips.length || REDUCE || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        const v = e.target;
+        if (e.isIntersecting) { const pr = v.play(); if (pr && pr.catch) pr.catch(() => {}); }
+        else v.pause();
+      });
+    }, { threshold: 0.25 });
+    clips.forEach((v) => io.observe(v));
+  }
+
   function eagerReel() {
-    $$('.shot__img').forEach((img) => { img.loading = 'eager'; });
+    $$('img.shot__img').forEach((img) => { img.loading = 'eager'; });
   }
 
   // native (swipe) reel: phones, tablets, reduced motion
@@ -233,14 +267,16 @@
           if (!e.isIntersecting) return;
           const img = e.target;
           tileObserver.unobserve(img);
-          setImg(img, photos[+img.dataset.index], '(min-width: 1100px) 25vw, (min-width: 640px) 33vw, 50vw');
+          const q = photos[+img.dataset.index];
+          if (isVideo(q)) img.src = q.thumb;
+          else setImg(img, q, '(min-width: 1100px) 25vw, (min-width: 640px) 33vw, 50vw');
         });
       }, { root: sheet, rootMargin: '800px 0px' });
     }
     photos.forEach((p, i) => {
       const b = d.createElement('button');
       b.type = 'button';
-      b.className = 'tile';
+      b.className = isVideo(p) ? 'tile is-video' : 'tile';
       b.dataset.index = String(i);
       b.style.setProperty('--ar', ratio(p).toFixed(4));
       b.setAttribute('aria-label', `Open photo ${i + 1} of ${n}${p.caption ? `: ${p.caption}` : ''}`);
@@ -254,6 +290,7 @@
       b.append(img);
       grid.append(b);
       if (tileObserver) tileObserver.observe(img);
+      else if (isVideo(p)) img.src = p.thumb;
       else setImg(img, p, '50vw');
     });
     sheetBuilt = true;
@@ -288,7 +325,8 @@
 
   // ---------------------------------------------------------------- lightbox
 
-  const lb = { el: null, img: null, index: 0, opener: null };
+  const lb = { el: null, img: null, video: null, index: 0, opener: null };
+  const lbMedia = () => (lb.video && !lb.video.hidden ? lb.video : lb.img);
 
   function lbShow(i, dir) {
     const n = photos.length;
@@ -296,6 +334,24 @@
     const p = photos[lb.index];
     const img = lb.img;
     const idx = lb.index;
+    $('.lb__count', lb.el).textContent = `${pad2(idx + 1)} / ${pad2(n)}`;
+    $('.lb__cap', lb.el).textContent = p.caption || '';
+    if (isVideo(p)) {
+      img.hidden = true;
+      img.removeAttribute('src');
+      img.removeAttribute('srcset');
+      const v = lb.video;
+      v.hidden = false;
+      v.poster = p.thumb || '';
+      v.src = p.src;
+      v.setAttribute('aria-label', altFor(p, idx));
+      const pr = v.play();
+      if (pr && pr.catch) pr.catch(() => {});
+      if (ANIM) gsap.fromTo(v, { x: dir * 60, y: 0, opacity: dir ? 0 : 1 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      return;
+    }
+    if (lb.video) { lb.video.pause(); lb.video.removeAttribute('src'); lb.video.hidden = true; }
+    img.hidden = false;
     img.classList.add('is-loading');
     img.onload = () => {
       if (lb.index !== idx) return;
@@ -310,9 +366,7 @@
     img.src = p.src;
     img.alt = altFor(p, idx);
     if (ANIM) gsap.set(img, { x: 0, y: 0, opacity: 1 });
-    $('.lb__count', lb.el).textContent = `${pad2(idx + 1)} / ${pad2(n)}`;
-    $('.lb__cap', lb.el).textContent = p.caption || '';
-    [photos[(idx + 1) % n], photos[(idx - 1 + n) % n]].forEach((q) => { if (q) new Image().src = q.src; });
+    [photos[(idx + 1) % n], photos[(idx - 1 + n) % n]].forEach((q) => { if (q && !isVideo(q)) new Image().src = q.src; });
   }
 
   function lbOpen(i, opener) {
@@ -331,6 +385,7 @@
       lb.el.hidden = true;
       lb.img.removeAttribute('src');
       lb.img.removeAttribute('srcset');
+      if (lb.video) { lb.video.pause(); lb.video.removeAttribute('src'); lb.video.hidden = true; }
       lock('lb', false);
       if (lb.opener) lb.opener.focus({ preventScroll: true });
     };
@@ -341,6 +396,7 @@
   function setupLightbox() {
     lb.el = $('.lb');
     lb.img = $('.lb__img', lb.el);
+    lb.video = $('.lb__video', lb.el);
     const stage = $('.lb__stage', lb.el);
     $('.lb__close', lb.el).addEventListener('click', lbClose);
     $('.lb__prev', lb.el).addEventListener('click', () => lbShow(lb.index - 1, -1));
@@ -358,7 +414,7 @@
       if (Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
       if (moved && ANIM) {
         const down = dy > 0 && Math.abs(dy) > Math.abs(dx);
-        gsap.set(lb.img, { x: down ? 0 : dx * 0.7, y: down ? dy * 0.7 : 0, opacity: down ? Math.max(0.3, 1 - dy / 400) : 1 });
+        gsap.set(lbMedia(), { x: down ? 0 : dx * 0.7, y: down ? dy * 0.7 : 0, opacity: down ? Math.max(0.3, 1 - dy / 400) : 1 });
       }
     });
     const end = (e) => {
@@ -371,10 +427,10 @@
       }
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) lbShow(lb.index + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
       else if (dy > 90) lbClose();
-      else if (ANIM) gsap.to(lb.img, { x: 0, y: 0, opacity: 1, duration: 0.35, ease: 'power3.out' });
+      else if (ANIM) gsap.to(lbMedia(), { x: 0, y: 0, opacity: 1, duration: 0.35, ease: 'power3.out' });
     };
     stage.addEventListener('pointerup', end);
-    stage.addEventListener('pointercancel', (e) => { active = false; if (ANIM) gsap.to(lb.img, { x: 0, y: 0, opacity: 1, duration: 0.3 }); end(e); });
+    stage.addEventListener('pointercancel', (e) => { active = false; if (ANIM) gsap.to(lbMedia(), { x: 0, y: 0, opacity: 1, duration: 0.3 }); end(e); });
   }
 
   // ---------------------------------------------------------------- menu, keyboard, clicks
@@ -508,7 +564,7 @@
 
   // play loops only while visible (saves battery)
   function setupLoops() {
-    const loops = [$('.eq'), $('.book__character')].filter(Boolean);
+    const loops = [$('.book__character')].filter(Boolean);
     if (REDUCE || !('IntersectionObserver' in window)) return;
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => e.target.classList.toggle('is-playing', e.isIntersecting));
@@ -534,7 +590,7 @@
 
   // ---------------------------------------------------------------- motion
 
-  const fx = { split: 1, target: 1, ts: 1 };
+  const fx = { split: 1, target: 1 };
   let ticker = null;
 
   function setupLenis() {
@@ -621,39 +677,14 @@
     });
   }
 
-  function setupTicker() {
-    const track = $('.ticker__track');
-    if (!track) return null;
-    const tween = gsap.to(track, { xPercent: -50, duration: 32, ease: 'none', repeat: -1 });
-    tween.totalTime(tween.duration() * 400);
-    return tween;
-  }
-
-  function setupVelocityFx(tickerTween) {
-    let dir = 1;
-    ST.create({
-      start: 0,
-      end: 'max',
-      onUpdate: (self) => {
-        const v = Math.abs(self.getVelocity());
-        dir = self.direction || dir;
-        fx.target = Math.max(fx.target, Math.min(1 + v / 260, 9));
-        fx.boost = Math.min(v / 180, 6);
-      },
-    });
-    fx.boost = 0;
+  // chromatic split on the wordmark: kicked once by the intro, then settles
+  function setupSplit() {
     ticker = () => {
       fx.target += (1 - fx.target) * 0.06;
-      fx.boost *= 0.92;
       const next = fx.split + (fx.target - fx.split) * 0.25;
       if (Math.abs(next - fx.split) > 0.01) {
         fx.split = next;
         root.style.setProperty('--split', next.toFixed(2));
-      }
-      if (tickerTween) {
-        const ts = dir * (1 + fx.boost);
-        fx.ts += (ts - fx.ts) * 0.12;
-        tickerTween.timeScale(fx.ts);
       }
     };
     gsap.ticker.add(ticker);
@@ -694,19 +725,9 @@
 
   function setupSound() {
     const sec = $('#sound');
-    fadeUp([$('.label', sec)]);
-    $$('.row', sec).forEach((row) => {
-      const dir = +row.dataset.dir || 1;
-      const from = dir > 0 ? -30 : -6;
-      const to = dir > 0 ? -6 : -30;
-      gsap.fromTo(row, { xPercent: from }, {
-        xPercent: to,
-        ease: 'none',
-        scrollTrigger: { trigger: $('.rows', sec), start: 'top bottom', end: 'bottom top', scrub: 0.6 },
-      });
-    });
-    fadeUp([$('.sound__title', sec), $('.sound__text', sec), $('.eq', sec)]);
+    fadeUp([$('.label', sec), $('.sound__title', sec), $('.sound__text', sec), $('.genres', sec)]);
   }
+
 
   function setupOffer() {
     const sec = $('#offer');
@@ -815,7 +836,7 @@
       opacity: 1, yPercent: 0, scaleY: 1, transformOrigin: '50% 100%',
       duration: 1.2, ease: 'expo.out', stagger: 0.055,
     }, hadLoader ? 0.45 : 0)
-      .fromTo(['.hero__meta', '.hero__bottom'], { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.12 }, '<0.35')
+      .fromTo(['.hero__bottom'], { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.12 }, '<0.35')
       .add(() => { fx.target = 9; }, '<');
   }
 
@@ -835,6 +856,7 @@
     setupNavState();
     setupLoops();
     setupVideo();
+    setupClipPlayback();
 
     if (!ANIM) {
       setupNativeReel();
@@ -846,7 +868,7 @@
       setupCursor();
       setupHeroScroll();
       setupBackdrop();
-      setupVelocityFx(setupTicker());
+      setupSplit();
       setupJourney();
       setupSound();
       setupOffer();
