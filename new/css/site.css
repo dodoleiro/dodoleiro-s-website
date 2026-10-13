@@ -740,3 +740,27 @@ main { position: relative; z-index: 1; }
 .js:not(.no-anim) .nav__logo { opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .js:not(.no-anim) .nav.has-logo .nav__logo,
 .js:not(.no-anim).is-locked .nav__logo { opacity: 1; pointer-events: auto; }
+
+/* ---------- scroll cue: the original site's Lottie arrows (CSS chevrons until/unless it loads) ---------- */
+.scrollcue {
+  position: absolute; left: 50%; bottom: max(1.5rem, env(safe-area-inset-bottom));
+  z-index: 2;
+  display: grid; place-items: center;
+  width: 60px; min-height: 48px;
+  margin-left: -30px;
+  color: var(--fg);
+}
+.scrollcue__lottie { display: none; width: 60px; }
+.scrollcue.has-lottie .scrollcue__lottie { display: block; }
+.scrollcue.has-lottie .scrollcue__fallback { display: none; }
+.scrollcue__fallback { display: grid; justify-items: center; gap: 1px; }
+.scrollcue__fallback i {
+  width: 13px; height: 13px;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.15;
+  animation: cue 1.5s ease-in-out infinite;
+}
+.scrollcue__fallback i:nth-child(2) { animation-delay: 0.18s; }
+.scrollcue__fallback i:nth-child(3) { animation-delay: 0.36s; }
+@keyframes cue { 0%, 100% { opacity: 0.15; } 40% { opacity: 1; } }
