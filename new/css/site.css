@@ -303,11 +303,6 @@ main { position: relative; z-index: 1; }
 }
 .hero__title { margin: auto 0 0; padding-bottom: clamp(1rem, 4vh, 3rem); }
 .wm { width: 100%; height: auto; fill: var(--fg); overflow: visible; }
-.wm--wide { display: none; }
-@media (min-width: 700px) {
-  .wm--wide { display: block; }
-  .wm--stack { display: none; }
-}
 .wm__ghost--p { fill: var(--pink); transform: translateX(calc(var(--split) * -4px)); }
 .wm__ghost--g { fill: var(--green); transform: translateX(calc(var(--split) * 4px)); }
 .wm .l { transform-box: fill-box; transform-origin: 50% 100%; }
