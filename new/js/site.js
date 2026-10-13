@@ -17,6 +17,8 @@
   const ANIM = !!(gsap && ST) && !REDUCE;
 
   const GALLERY_URL = '/gallery/gallery.json';
+  // same scroll-arrows animation the current dodoleiro.com uses (hosted by Webflow)
+  const CUE_LOTTIE = 'https://cdn.prod.website-files.com/6609fc095e9084457b5e7c14/662fd0fc65a8514c0266a91a_Animation%20-%201714409707531.json';
   const REEL_MAX = 12;
   const ARROW = 'M4 12h15M13 6l6 6-6 6';
 
@@ -911,6 +913,40 @@
     });
   }
 
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const el = d.createElement('script');
+      el.src = src;
+      el.async = true;
+      el.onload = resolve;
+      el.onerror = reject;
+      d.head.append(el);
+    });
+  }
+
+  function setupScrollCue() {
+    const cue = $('.scrollcue');
+    if (!cue) return;
+    if (ANIM) {
+      gsap.fromTo(cue, { autoAlpha: 1 }, {
+        autoAlpha: 0,
+        ease: 'none',
+        immediateRender: false,
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: () => `+=${window.innerHeight * 0.2}`, scrub: true },
+      });
+    }
+    if (REDUCE) return;
+    const box = $('.scrollcue__lottie', cue);
+    Promise.all([
+      fetch(CUE_LOTTIE).then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status)))),
+      window.lottie ? Promise.resolve() : loadScript('js/lib/lottie_light.min.js'),
+    ]).then(([data]) => {
+      if (!window.lottie) return;
+      window.lottie.loadAnimation({ container: box, renderer: 'svg', loop: true, autoplay: true, animationData: data });
+      cue.classList.add('has-lottie');
+    }).catch(() => { /* keep the CSS arrows */ });
+  }
+
   // ---------------------------------------------------------------- loader + intro
 
   function playLoader() {
@@ -969,6 +1005,7 @@
 
     if (!ANIM) {
       setupNativeReel();
+      setupScrollCue();
       return;
     }
 
@@ -994,6 +1031,7 @@
 
     const hadLoader = await loaderDone;
     reveal(hadLoader);
+    setupScrollCue();
     window.addEventListener('load', () => ST.refresh(), { once: true });
   }
 
