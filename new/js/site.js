@@ -654,10 +654,59 @@
   }
 
   function setupHeroScroll() {
-    gsap.timeline({ scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
-      .to('.hero__title', { yPercent: -40, ease: 'none' }, 0)
-      .to('.hero__inner', { opacity: 0, ease: 'none' }, 0)
-      .to('.backdrop__layer[data-key="hero"]', { scale: 1.18, ease: 'none' }, 0);
+    gsap.to('.backdrop__layer[data-key="hero"]', {
+      scale: 1.18,
+      ease: 'none',
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
+    });
+    setupLogoDock();
+  }
+
+  // the big centred wordmark shrinks into the nav logo spot while the first screen scrolls away,
+  // then hands over to the real nav logo (which hides/shows with the nav from there on)
+  function setupLogoDock() {
+    const nav = $('.nav');
+    const title = $('.hero__title');
+    const logo = $('.nav__logo img');
+    if (!title || !logo) return;
+    // offset* ignore transforms, so these stay valid while the title is mid-flight
+    const pagePos = (el) => {
+      let x = 0; let y = 0;
+      for (let e = el; e; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; }
+      return { x, y };
+    };
+    const travel = () => window.innerHeight * 0.6;
+    const delta = () => {
+      const a = pagePos(title);
+      const b = pagePos(logo);
+      return { x: b.x - a.x, y: b.y - a.y, s: logo.offsetWidth / title.offsetWidth };
+    };
+    let docked = null;
+    const sync = (self) => {
+      const now = self.progress > 0.995;
+      if (now === docked) return;
+      docked = now;
+      nav.classList.toggle('has-logo', now);
+      gsap.set(title, { autoAlpha: now ? 0 : 1 });
+    };
+    gsap.fromTo(title, { x: 0, y: 0, scale: 1 }, {
+      x: () => delta().x,
+      // the page scrolls `travel` px during the move, so add it back to stay pinned to the screen
+      y: () => delta().y + travel(),
+      scale: () => delta().s,
+      transformOrigin: '0 0',
+      ease: 'none',
+      immediateRender: false,
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: () => `+=${travel()}`,
+        scrub: true,
+        invalidateOnRefresh: true,
+        onUpdate: sync,
+        onRefresh: sync,
+      },
+    });
   }
 
   function setupBackdrop() {
