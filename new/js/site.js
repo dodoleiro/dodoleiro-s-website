@@ -720,22 +720,74 @@
         }),
       });
     });
-    fadeUp($$('.chapter', sec));
+    setupTimeline($('.tl', sec));
+  }
+
+  // story: the line fills as you scroll and each year lights up when the line reaches it
+  function setupTimeline(tl) {
+    if (!tl) return;
+    gsap.fromTo($('.tl__line i', tl), { scaleY: 0 }, {
+      scaleY: 1,
+      ease: 'none',
+      transformOrigin: '50% 0',
+      scrollTrigger: { trigger: tl, start: 'top 62%', end: 'bottom 62%', scrub: true },
+    });
+    $$('.tl__item', tl).forEach((item) => {
+      ST.create({
+        trigger: item,
+        start: 'top 62%',
+        onEnter: () => item.classList.add('is-on'),
+        onLeaveBack: () => item.classList.remove('is-on'),
+      });
+      gsap.fromTo($('.tl__body', item), { opacity: 0, y: 40 }, {
+        opacity: 1,
+        y: 0,
+        ease: 'none',
+        scrollTrigger: { trigger: item, start: 'top 85%', end: 'top 58%', scrub: true },
+      });
+    });
+  }
+
+  // genre words on two crossing bands that run all the time and speed up with the scroll
+  function setupBands(sec) {
+    const tracks = $$('.band__track', sec);
+    if (!tracks.length) return;
+    const tweens = tracks.map((t, i) => {
+      const tw = gsap.fromTo(t, { xPercent: i % 2 ? -50 : 0 }, { xPercent: i % 2 ? 0 : -50, duration: 30, ease: 'none', repeat: -1 });
+      tw.totalTime(tw.duration() * 400);
+      return tw;
+    });
+    let dir = 1;
+    let boost = 0;
+    let ts = 1;
+    ST.create({
+      start: 0,
+      end: 'max',
+      onUpdate: (self) => {
+        dir = self.direction || dir;
+        boost = Math.min(Math.abs(self.getVelocity()) / 180, 6);
+      },
+    });
+    ST.create({
+      trigger: $('.bands', sec),
+      start: 'top bottom',
+      end: 'bottom top',
+      onToggle: (self) => tweens.forEach((tw) => (self.isActive ? tw.resume() : tw.pause())),
+    });
+    gsap.ticker.add(() => {
+      boost *= 0.92;
+      ts += (dir * (1 + boost) - ts) * 0.1;
+      tweens.forEach((tw) => tw.timeScale(ts));
+    });
   }
 
   function setupSound() {
     const sec = $('#sound');
     fadeUp([$('.label', sec)]);
-    $$('.row', sec).forEach((row) => {
-      const dir = +row.dataset.dir || 1;
-      gsap.fromTo(row, { xPercent: dir > 0 ? -30 : -6 }, {
-        xPercent: dir > 0 ? -6 : -30,
-        ease: 'none',
-        scrollTrigger: { trigger: $('.rows', sec), start: 'top bottom', end: 'bottom top', scrub: 0.6 },
-      });
-    });
+    setupBands(sec);
     fadeUp([$('.sound__title', sec), $('.sound__text', sec)]);
   }
+
 
 
   function setupOffer() {
@@ -845,8 +897,7 @@
       opacity: 1, yPercent: 0, scaleY: 1, transformOrigin: '50% 100%',
       duration: 1.2, ease: 'expo.out', stagger: 0.055,
     }, hadLoader ? 0.45 : 0)
-      .fromTo(['.hero__bottom'], { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.12 }, '<0.35')
-      .add(() => { fx.target = 9; }, '<');
+      .add(() => { fx.target = 9; }, '<0.1');
   }
 
   // ---------------------------------------------------------------- boot
