@@ -1,6 +1,12 @@
 /* Dodoleiro — site styles (mobile first) */
 
 @font-face {
+  font-family: "Anton";
+  src: url("../fonts/anton-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
   font-family: "Space Grotesk";
   src: url("../fonts/space-grotesk-var.woff2") format("woff2");
   font-weight: 300 700;
@@ -24,6 +30,7 @@
   --pink: #ea36af;
   --green: #75fa69;
   --display: var(--sans);
+  --impact: "Anton", "Impact", "Arial Narrow", sans-serif;
   --sans: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --pad: clamp(1.25rem, 6vw, 7rem);
@@ -321,14 +328,15 @@ main { position: relative; z-index: 1; }
   background: var(--fg); animation: drip 1.8s var(--ease) infinite;
 }
 @keyframes drip { 0% { transform: translateY(-100%); } 100% { transform: translateY(260%); } }
-.hero__status {
+.hero__cta {
   display: inline-flex; align-items: center; gap: 0.6rem; justify-self: end;
-  padding: 0.65rem 1rem;
-  border: 1px solid var(--faint); border-radius: 99px;
-  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
-  text-decoration: none; background: rgba(7, 7, 7, 0.35);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  padding: 0 0 0.35rem;
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); font-weight: 500; letter-spacing: -0.01em;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
 }
+.hero__cta .ico { transition: transform 0.45s var(--ease); }
+.hero__cta:hover .ico { transform: translateX(0.3em); }
 @media (min-width: 900px) {
   .hero__bottom { grid-template-columns: 1fr auto auto; }
   .hero__lead { grid-column: auto; }
@@ -346,13 +354,12 @@ main { position: relative; z-index: 1; }
 }
 .statement .w { display: inline-block; }
 .stats {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem clamp(1rem, 4vw, 4rem);
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem clamp(1rem, 4vw, 4rem);
   margin: clamp(5rem, 14vh, 9rem) 0;
 }
 .stat { border-top: 1px solid var(--line); padding-top: 1rem; }
 .stat__num {
-  font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 6vw, 5.5rem); line-height: 1;
-  letter-spacing: -0.05em;
+  font-family: var(--impact); font-weight: 400; font-size: clamp(3.2rem, 9vw, 7.5rem); line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .stat dd {
@@ -375,15 +382,21 @@ main { position: relative; z-index: 1; }
 @media (min-width: 900px) {
   .chapter { grid-template-columns: 11rem minmax(0, 1fr) minmax(0, 1.2fr); align-items: start; padding: 3rem 0; }
 }
+@media (min-width: 900px) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
 /* ---------- sound ---------- */
 .sound__body { display: grid; gap: 2.5rem; }
-.genres { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; }
-.genres li {
-  padding: 0.55rem 1.1rem;
-  border: 1px solid var(--faint); border-radius: 99px;
-  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+.rows { margin: 3rem calc(var(--pad) * -1) 4rem; overflow: hidden; }
+.row {
+  display: flex; align-items: center; gap: 0.25em;
+  width: max-content;
+  font-family: var(--impact); font-size: clamp(4.2rem, 17vw, 15rem); line-height: 0.95;
+  text-transform: uppercase; white-space: nowrap;
+  will-change: transform;
 }
+.row .star { width: 0.3em; height: 0.3em; margin: 0 0.15em; }
+.row--outline { color: transparent; -webkit-text-stroke: 1.5px var(--fg); }
+.row--outline .star { background: var(--fg); }
 .sound__title {
   margin: 1.2em 0 0; font-family: var(--display); font-weight: 500; font-size: clamp(2rem, 4.6vw, 4.2rem); line-height: 1.05; letter-spacing: -0.035em; max-width: 16ch;
 }
@@ -391,7 +404,6 @@ main { position: relative; z-index: 1; }
 .sound__text strong { color: var(--fg); font-weight: 600; }
 @media (min-width: 900px) {
   .sound__body { grid-template-columns: 1.1fr 1fr; align-items: end; column-gap: 4rem; }
-  .genres { grid-column: 1 / -1; }
 }
 
 /* ---------- offer (stacking cards) ---------- */
@@ -728,11 +740,6 @@ main { position: relative; z-index: 1; }
   content: ""; position: absolute; right: 0.6rem; bottom: 0.6rem;
   width: 2rem; height: 2rem; border-radius: 50%;
   background: rgba(7, 7, 7, 0.6) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 7l9 5-9 5z' fill='%23f3f0e8'/%3E%3C/svg%3E") center / 1.1rem no-repeat;
-}
-@media (max-width: 639.98px) {
-  .stats { grid-template-columns: 1fr; gap: 0; }
-  .stat { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 1.1rem 0; }
-  .stat dd { margin: 0; text-align: right; }
 }
 @media (max-width: 899.98px) {
   /* phones/tablets: uniform cards in the swipe strip; the lightbox shows the full frame */

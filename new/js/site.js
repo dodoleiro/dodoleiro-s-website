@@ -725,7 +725,16 @@
 
   function setupSound() {
     const sec = $('#sound');
-    fadeUp([$('.label', sec), $('.sound__title', sec), $('.sound__text', sec), $('.genres', sec)]);
+    fadeUp([$('.label', sec)]);
+    $$('.row', sec).forEach((row) => {
+      const dir = +row.dataset.dir || 1;
+      gsap.fromTo(row, { xPercent: dir > 0 ? -30 : -6 }, {
+        xPercent: dir > 0 ? -6 : -30,
+        ease: 'none',
+        scrollTrigger: { trigger: $('.rows', sec), start: 'top bottom', end: 'bottom top', scrub: 0.6 },
+      });
+    });
+    fadeUp([$('.sound__title', sec), $('.sound__text', sec)]);
   }
 
 
