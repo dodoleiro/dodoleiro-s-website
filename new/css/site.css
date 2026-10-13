@@ -736,3 +736,7 @@ main { position: relative; z-index: 1; }
   /* phones/tablets: uniform cards in the swipe strip; the lightbox shows the full frame */
   .shot__btn { aspect-ratio: 4 / 5; width: min(var(--reel-wmax), calc(var(--reel-h) * 0.8)); }
 }
+/* nav logo appears once the hero wordmark has flown into its place (site.js) */
+.js:not(.no-anim) .nav__logo { opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.js:not(.no-anim) .nav.has-logo .nav__logo,
+.js:not(.no-anim).is-locked .nav__logo { opacity: 1; pointer-events: auto; }
