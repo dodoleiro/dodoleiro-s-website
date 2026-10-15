@@ -63,6 +63,8 @@ a { color: inherit; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 h1, h2, h3, h4 { font-weight: 400; }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+/* sections focused by the in-page links (for screen readers) never get a frame */
+[tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; }
 ::selection { background: var(--fg); color: var(--bg); }
 html.is-locked, html.is-locked body { overflow: hidden; }
 
