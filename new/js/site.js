@@ -743,7 +743,6 @@
 
   function setupJourney() {
     const sec = $('#journey');
-    fadeUp([$('.label', sec)]);
     const statement = $('[data-words]', sec);
     if (statement) {
       const words = splitWords(statement);
@@ -834,7 +833,6 @@
 
   function setupSound() {
     const sec = $('#sound');
-    fadeUp([$('.label', sec)]);
     setupBands(sec);
     fadeUp([$('.sound__title', sec), $('.sound__text', sec)]);
   }
@@ -843,7 +841,7 @@
 
   function setupOffer() {
     const sec = $('#offer');
-    fadeUp([$('.label', sec), $('.big', sec)]);
+    fadeUp([$('.big', sec)]);
     const cards = $$('.card', sec);
     cards.forEach((card, i) => {
       const img = $('.card__media img', card);
@@ -858,14 +856,14 @@
       const next = cards[i + 1];
       if (!next) return;
       gsap.to(card, {
-        scale: 0.92,
-        '--dim': 0.6,
+        scale: 0.94,
+        '--dim': 0.5,
         ease: 'none',
         scrollTrigger: {
           trigger: next,
           start: 'top bottom',
           end: () => `top ${parseFloat(getComputedStyle(next).top) + 2}px`,
-          scrub: true,
+          scrub: 0.8,
           invalidateOnRefresh: true,
         },
       });
@@ -874,7 +872,7 @@
 
   function setupGalleryMotion() {
     const sec = $('#gallery');
-    fadeUp([$('.label', sec), $('.big', sec), $('.gallery__sub', sec)], 'top 92%');
+    fadeUp([$('.big', sec), $('.gallery__sub', sec)], 'top 92%');
     ST.create({ trigger: sec, start: 'top 250%', once: true, onEnter: eagerReel });
     const mm = gsap.matchMedia();
     mm.add('(min-width: 900px)', () => setupPinnedReel());
@@ -883,7 +881,7 @@
 
   function setupCredits() {
     const sec = $('#credits');
-    fadeUp([$('.label', sec), ...$$('.big', sec), ...$$('.cgroup__country', sec), ...$$('.ccity__name', sec)], 'top 92%');
+    fadeUp([...$$('.big', sec), ...$$('.cgroup__country', sec), ...$$('.ccity__name', sec)], 'top 92%');
     const rows = $$('.venues li, .artists li', sec);
     gsap.set(rows.map((li) => li.firstElementChild), { yPercent: 105 });
     const show = (batch) => gsap.to(batch.map((li) => li.firstElementChild), {
@@ -894,7 +892,7 @@
 
   function setupBook() {
     const sec = $('#book');
-    fadeUp([$('.label', sec), $('.book__title', sec), $('.book__sub', sec), $('.book__mail', sec), ...$$('.book__list li', sec)]);
+    fadeUp([$('.book__title', sec), $('.book__sub', sec), ...$$('.book__contact', sec)]);
     const art = $('.book__art', sec);
     gsap.fromTo(art, { yPercent: 18, opacity: 0 }, {
       yPercent: 0,
