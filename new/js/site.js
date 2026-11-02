@@ -19,7 +19,7 @@
   const GALLERY_URL = '/gallery/gallery.json';
   // same scroll-arrows animation the current dodoleiro.com uses (hosted by Webflow)
   const CUE_LOTTIE = 'https://cdn.prod.website-files.com/6609fc095e9084457b5e7c14/662fd0fc65a8514c0266a91a_Animation%20-%201714409707531.json';
-  const REEL_MAX = 12;
+  const REEL_MAX = 8;
   const ARROW = 'M4 12h15M13 6l6 6-6 6';
 
   let lenis = null;
@@ -114,7 +114,7 @@
       btn.type = 'button';
       btn.className = 'shot__btn';
       btn.dataset.index = String(i);
-      btn.setAttribute('aria-label', `${pad2(i + 1)} / ${pad2(n)} — open photo${p.caption ? `: ${p.caption}` : ''}`);
+      btn.setAttribute('aria-label', `Open photo ${i + 1} of ${n}${p.caption ? `: ${p.caption}` : ''}`);
       if (isLqip(p.lqip)) btn.style.backgroundImage = `url("${p.lqip}")`;
 
       let img;
@@ -130,11 +130,7 @@
         setImg(img, p, '(min-width: 900px) 50vw, 85vw');
       }
 
-      const num = d.createElement('span');
-      num.className = 'shot__num';
-      num.textContent = `${pad2(i + 1)} / ${pad2(n)}`;
-
-      btn.append(img, num);
+      btn.append(img);
       fig.append(btn);
       if (p.caption) {
         const cap = d.createElement('p');
@@ -888,6 +884,19 @@
       yPercent: 0, duration: 0.9, ease: 'expo.out', stagger: 0.06, overwrite: true,
     });
     ST.batch(rows, { start: 'top 94%', once: true, onEnter: show, onLeave: show });
+    // country outlines draw themselves once the group comes into view
+    $$('.cgroup', sec).forEach((group) => {
+      const path = $('.cmap path', group);
+      if (!path) return;
+      gsap.set(path, { strokeDasharray: 1, strokeDashoffset: 1 });
+      let drawn = false;
+      const draw = () => {
+        if (drawn) return;
+        drawn = true;
+        gsap.to(path, { strokeDashoffset: 0, duration: 1.8, ease: 'power2.inOut' });
+      };
+      ST.create({ trigger: group, start: 'top 80%', onEnter: draw, onEnterBack: draw, onLeave: draw });
+    });
   }
 
   function setupBook() {

@@ -471,11 +471,6 @@ main { position: relative; z-index: 1; }
 }
 .shot.is-active .shot__img { filter: grayscale(0) brightness(1) contrast(1); }
 @media (hover: hover) { .shot__btn:hover .shot__img { filter: grayscale(0) brightness(1) contrast(1); } }
-.shot__num {
-  position: absolute; left: 0.8rem; bottom: 0.7rem;
-  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em;
-  color: #fff; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
-}
 .shot__cap {
   width: 0; min-width: 100%;
   margin: 0.65rem 0 0;
@@ -620,6 +615,13 @@ main { position: relative; z-index: 1; }
   font-family: var(--display); font-weight: 500; font-size: clamp(1.5rem, 3vw, 2.4rem); line-height: 1.1; letter-spacing: -0.03em;
   color: var(--muted);
 }
+.cgroup__head { display: grid; gap: 1.1rem; align-content: start; justify-items: start; }
+.cmap {
+  height: clamp(3.8rem, 6vw, 5.5rem); width: auto; overflow: visible;
+  fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round;
+  opacity: 0.85;
+}
+.no-anim .cmap path { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
 .ccity__name {
   margin: 1.6rem 0 0.4rem;
   font-size: clamp(1.05rem, 1rem + 0.3vw, 1.25rem); font-weight: 500;
@@ -640,7 +642,7 @@ main { position: relative; z-index: 1; }
 }
 @media (min-width: 900px) {
   .cgroup { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 3rem; padding-top: 2.5rem; }
-  .cgroup__country { position: sticky; top: calc(var(--nav-h) + 1.5rem); align-self: start; }
+  .cgroup__head { position: sticky; top: calc(var(--nav-h) + 1.5rem); align-self: start; }
   .cgroup__cities .ccity:first-child .ccity__name { margin-top: 0.4rem; }
 }
 
@@ -767,3 +769,7 @@ main { position: relative; z-index: 1; }
 .scrollcue__fallback i:nth-child(2) { animation-delay: 0.18s; }
 .scrollcue__fallback i:nth-child(3) { animation-delay: 0.36s; }
 @keyframes cue { 0%, 100% { opacity: 0.15; } 40% { opacity: 1; } }
+
+/* photo numbers are for screen readers only */
+.lb__count { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.lb__top { justify-content: flex-end; }
